@@ -13,8 +13,7 @@
   ];
 
   #env.VAR = ""; 
-
-  enterShell = ''
-    echo $VAR
-  '';
+  #enterShell = ''
+  #   echo $VAR
+  #'';
 }
