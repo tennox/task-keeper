@@ -35,8 +35,8 @@
           rustToolchain = pkgs.rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
             # extensions = [ "rust-src" ];
             targets = [
-              "x86_64-unknown-linux-musl"
-              #  "wasm-unknown-unknown" 
+              # "x86_64-unknown-linux-musl"
+               "wasm-unknown-unknown" 
             ];
           });
 
@@ -46,7 +46,8 @@
             # https://crane.dev/getting-started.html
             src = craneLib.cleanCargoSource (craneLib.path ./.);
 
-            CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
+            CARGO_BUILD_TARGET = "wasm-unknown-unknown";
+            # CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
             CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
             # Add extra inputs here or any other derivation settings
             # doCheck = true;
