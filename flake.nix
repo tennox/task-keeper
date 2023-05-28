@@ -18,7 +18,7 @@
     };
   };
 
-  outputs = inputs@{ flake-parts, self, nixpkgs, rust-overlay, crane, devenv, ... }:
+  outputs = inputs@{ self, flake-parts, nixpkgs, rust-overlay, crane, devenv, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.devenv.flakeModule
