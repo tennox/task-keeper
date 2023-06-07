@@ -12,7 +12,8 @@
       url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    fenix = { # needed for devenv's languages.rust
+    fenix = {
+      # needed for devenv's languages.rust
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };

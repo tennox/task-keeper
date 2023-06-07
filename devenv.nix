@@ -27,7 +27,8 @@
     # Docs: https://devenv.sh/pre-commit-hooks/
     # available pre-configured hooks: https://devenv.sh/reference/options/#pre-commithooks
     # adding hooks which are not included: https://github.com/cachix/pre-commit-hooks.nix/issues/31
-    alejandra.enable = true; # for nix - https://github.com/kamadorueda/alejandra
+    nil.enable = true; # nix check
+    nixpkgs-fmt.enable = true; # nix formatting
 
     clippy.enable = true;
     #cargo-check.enable = true; ← if you don't want clippy
