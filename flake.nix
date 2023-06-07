@@ -7,18 +7,18 @@
     nix2container.url = "github:nlewo/nix2container";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.url = "github:oxalica/rust-overlay"; # TODO: replace with fenix?
     crane = {
       url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    fenix = {
+    fenix = { # needed for devenv's languages.rust
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = inputs@{ self, flake-parts, nixpkgs, rust-overlay, crane, devenv, ... }:
+  outputs = inputs@{ self, flake-parts, nixpkgs, rust-overlay, crane, devenv, ... }: (
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.devenv.flakeModule
@@ -36,7 +36,7 @@
             # extensions = [ "rust-src" ];
             targets = [
               # "x86_64-unknown-linux-musl"
-               "wasm-unknown-unknown" 
+              "wasm-unknown-unknown"
             ];
           });
 
@@ -92,5 +92,6 @@
         # those are more easily expressed in perSystem.
 
       };
-    };
+    }
+  );
 }

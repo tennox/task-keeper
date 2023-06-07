@@ -1,19 +1,35 @@
-# Guide: https://devenv.sh/basics/
-# Docs:  https://devenv.sh/reference/options/
-{ pkgs, ... }:
-{
+# Docs: https://devenv.sh/basics/
+{ pkgs, ... }: {
 
-  languages.rust = { # https://github.com/cachix/devenv/blob/main/src/modules/languages/rust.nix
-    enable = true;
-    version = "latest"; # = nightly
+  languages = {
+    # Docs: https://devenv.sh/languages/
+    nix.enable = true;
+    rust = {
+      enable = true; # https://github.com/cachix/devenv/blob/main/src/modules/languages/rust.nix
+      version = "latest"; # = nightly
+    };
   };
 
   packages = with pkgs; [
-    
+    # Search for packages: https://search.nixos.org/packages?channel=unstable&query=cowsay
+    # (note: this searches on unstable channel, be aware your nixpkgs flake input might be on a release channel)
+    cargo-watch
   ];
 
-  #env.VAR = ""; 
-  #enterShell = ''
-  #   echo $VAR
-  #'';
+  scripts = {
+    # Docs: https://devenv.sh/scripts/
+    #cr.exec = ''cargo run'';
+  };
+
+  difftastic.enable = true; # https://devenv.sh/integrations/difftastic/
+
+  pre-commit.hooks = {
+    # Docs: https://devenv.sh/pre-commit-hooks/
+    # available pre-configured hooks: https://devenv.sh/reference/options/#pre-commithooks
+    # adding hooks which are not included: https://github.com/cachix/pre-commit-hooks.nix/issues/31
+    alejandra.enable = true; # for nix - https://github.com/kamadorueda/alejandra
+
+    clippy.enable = true;
+    #cargo-check.enable = true; ← if you don't want clippy
+  };
 }
