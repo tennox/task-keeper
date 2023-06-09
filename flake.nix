@@ -8,18 +8,18 @@
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     # rust-overlay.url = "github:oxalica/rust-overlay";
+    fenix = {
+      url = "github:nix-community/fenix"; # needed for devenv's languages.rust
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    naersk.url = "github:nix-community/naersk";
     # crane = {
     #   url = "github:ipetkov/crane";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
-    fenix = {
-      # needed for devenv's languages.rust
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = inputs@{ self, flake-parts, nixpkgs, /* rust-overlay, crane, */ devenv, ... }: (
+  outputs = inputs@{ self, flake-parts, nixpkgs, /* rust-overlay, crane, */ naersk, devenv, fenix, ... }: (
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.devenv.flakeModule
@@ -42,48 +42,42 @@
 
           # craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
-          # my-crate = craneLib.buildPackage {
-          #   # https://crane.dev/getting-started.html
-          #   src = craneLib.cleanCargoSource (craneLib.path ./.);
+          # Naersk example from: https://github.com/nix-community/naersk/blob/master/examples/static-musl/flake.nix
+          rustToolchain = with fenix.packages.${system}; combine [
+            minimal.rustc
+            minimal.cargo
+            targets.x86_64-unknown-linux-musl.latest.rust-std
+          ];
+          naerskLib = naersk.lib.${system}.override {
+            cargo = rustToolchain;
+            rustc = rustToolchain;
+          };
 
-          #   CARGO_BUILD_TARGET = "wasm-unknown-unknown";
-          #   # CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
-          #   CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
-          #   # Add extra inputs here or any other derivation settings
-          #   # doCheck = true;
-          #   # buildInputs = [];
-          #   # nativeBuildInputs = [];
-          # };
+          task-keeper = naerskLib.buildPackage {
+            # https://crane.dev/getting-started.html
+            src = ./.;
+            # TODO: fix binary name for nix run - https://github.com/nix-community/naersk/issues/127
+
+            # CARGO_BUILD_TARGET = "wasm-unknown-unknown";
+            CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
+            CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
+            # Add extra inputs here or any other derivation settings
+            # doCheck = true; - TODO: needs all deps in build inputs
+            # buildInputs = [];
+            nativeBuildInputs = with pkgs; [ pkgsStatic.stdenv.cc ];
+          };
         in
         {
           # Per-system attributes can be defined here. The self' and inputs'
           # module parameters provide easy access to attributes of the same
           # system.
-          # checks = {
-          #   inherit my-crate;
-          # };
+          checks = {
+            inherit task-keeper;
+          };
 
-          # packages.default = my-crate;
+          packages.default = task-keeper;
 
-          devenv.shells.default = {
-            # name = name;
-
-            # https://devenv.sh/reference/options/
-            packages = with pkgs; [
-              nixpkgs-fmt
-              nil
-              # (lib.traceVal config.packages.default)
-            ];
-
-            # enterShell = ''
-            #   hello
-            # '';
-
-            # # ? Not sure if needed
-            # env = /* nixpkgs.lib.trace "${rust}/lib/rustlib/src/rust/library" */ [
-            #   { name = "RUST_SRC_PATH"; value = "${rust}/lib/rustlib/src/rust/library"; }
-            # ];
-          } // (import ./devenv.nix { inherit pkgs; });
+          devenv.shells.default = (import ./devenv.nix { inherit pkgs; });
         }
       );
       flake = {
