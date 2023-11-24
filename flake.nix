@@ -78,6 +78,7 @@
           packages.default = task-keeper;
 
           devenv.shells.default = (import ./devenv.nix { inherit pkgs; });
+          devenv.shells.test = (import ./devenv-test.nix { inherit pkgs; });
         }
       );
       flake = {

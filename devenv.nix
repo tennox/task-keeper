@@ -8,31 +8,14 @@
       enable = true; # https://github.com/cachix/devenv/blob/main/src/modules/languages/rust.nix
       version = "latest"; # = nightly
     };
-      
-    # for tests
-    java.enable = true;
   };
 
   packages = with pkgs; [
     # Search for packages: https://search.nixos.org/packages?channel=unstable&query=cowsay
     # (note: this searches on unstable channel, be aware your nixpkgs flake input might be on a release channel)
     cargo-watch
-
-    # for tests:
-    gnumake
-    deno
-    sbt
     go-task
-    nodejs
-    python3
-    cargo-make
-    #adoptopenjdk-jre-bin
   ];
-
-  env = {
-    NODE_HOME = "${pkgs.nodejs}";
-    # JAVA_HOME = "${pkgs.adoptopenjdk-jre-bin.home}";
-  };
 
   difftastic.enable = true; # https://devenv.sh/integrations/difftastic/
 
