@@ -2,44 +2,38 @@ use crate::command_utils::{capture_command_output, run_command, CommandOutput};
 use crate::errors::KeeperError;
 use crate::models::Task;
 use crate::task;
-use serde::{Deserialize, Serialize};
-use std::env;
-use std::io::{BufRead, BufReader};
 use error_stack::Report;
 use which::which;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ArgcfileJson {
-    pub subcommands: Vec<ArgcSubCommand>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ArgcSubCommand {
-    pub name: String,
-    pub describe: Option<String>,
-}
-
 pub fn is_available() -> bool {
-    env::current_dir()
-        .map(|dir| dir.join("nurfile").exists())
+    std::env::current_dir()
+        .map(|dir| {
+            dir.join("Jakefile").exists()
+                || dir.join("Jakefile.js").exists()
+                || dir.join("jakefile").exists()
+                || dir.join("jakefile.js").exists()
+        })
         .unwrap_or(false)
 }
 
 pub fn is_command_available() -> bool {
-    which("nur").is_ok()
+    which("jake").is_ok()
 }
 
 pub fn list_tasks() -> Result<Vec<Task>, Report<KeeperError>> {
-    let nur_list = capture_command_output("nur", &["--quiet", "--list"])
+    let jake_tasks_output = capture_command_output("jake", &["--tasks"])
         .map(|output| String::from_utf8(output.stdout).unwrap_or("".to_owned()))?;
-    let tasks: Vec<Task> = BufReader::new(nur_list.as_bytes())
+    let tasks: Vec<Task> = jake_tasks_output
         .lines()
-        .map(|line| line.unwrap())
         .filter(|line| !line.is_empty())
         .map(|line| {
-            let name = line.trim();
-            let command = format!("nur {}", name);
-            task!(name, "nur", command)
+            let mut parts = line.split('#');
+            let mut task_name = parts.next().unwrap().trim().to_owned();
+            if task_name.starts_with("jake ") {
+                task_name = task_name.split_off(5);
+            }
+            let description = parts.next().unwrap_or("").trim().to_owned();
+            task!(task_name, "jake", description)
         })
         .collect();
     Ok(tasks)
@@ -53,12 +47,9 @@ pub fn run_task(
 ) -> Result<CommandOutput, Report<KeeperError>> {
     let mut args = vec![];
     args.extend(global_args);
-    args.push("--quiet");
     args.push(task);
     args.extend(task_args);
-    let tk_args = env::args().skip(2).collect::<Vec<String>>();
-    args.extend(tk_args.iter().map(|s| s.as_str()));
-    run_command("nur", &args, verbose)
+    run_command("jake", &args, verbose)
 }
 
 #[cfg(test)]
@@ -74,7 +65,7 @@ mod tests {
 
     #[test]
     fn test_run() {
-        if let Ok(output) = run_task("build1", &[], &[], true) {
+        if let Ok(output) = run_task("hello", &[], &[], true) {
             let status_code = output.status.code().unwrap_or(0);
             println!("exit code: {}", status_code);
         }

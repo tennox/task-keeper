@@ -1,7 +1,7 @@
 use std::io::{BufRead, BufReader, Stdin, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Stdio};
-use clap::{Command, Arg, ArgAction, ArgMatches, arg};
+use clap::{Command, Arg, ArgAction, ArgMatches};
 use colored::Colorize;
 use just::summary::Summary;
 
@@ -53,10 +53,13 @@ fn get_snippets_file() -> PathBuf {
 }
 
 pub fn run_snippet(args: &[&str]) {
+    dotenvx_rs::dotenv().ok();
     let snippet_file = get_snippets_file();
     let mut just_args = vec!["just", "-f", snippet_file.to_str().unwrap()];
     just_args.extend(args.iter().skip(1));
-    std::env::set_var("JUST_UNSTABLE", "1");
+    unsafe {
+        std::env::set_var("JUST_UNSTABLE", "1");
+    }
     if let Err(code) = just::run(just_args.iter()) {
         std::process::exit(code);
     }

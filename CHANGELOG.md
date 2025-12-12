@@ -2,6 +2,131 @@
 
 # Task Keeper Changelog
 
+## [0.30.9] - 2025-12-06
+
+- Fix cmake project detection
+- VS Code Task enhancement
+- Update to amper 0.9.1
+- Update to just 1.44
+
+## [0.30.8] - 2025-10-26
+
+- Add `tk sbom` for Maven and Gradle project to generate SBOM with CycloneDX format: `target/application.cdx.json` or
+  `build/application.cdx.json`
+
+Please check `$HOME/.gradle/init.d/plugins.gradle` with the following code:
+
+```
+initscript {
+  repositories {
+     gradlePluginPortal()
+  }
+
+  dependencies {
+     classpath 'com.github.ben-manes:gradle-versions-plugin:0.53.0'
+     classpath 'org.cyclonedx.bom:org.cyclonedx.bom.gradle.plugin:3.0.1'
+  }
+}
+
+allprojects {
+  apply plugin: com.github.benmanes.gradle.versions.VersionsPlugin
+  apply plugin: org.cyclonedx.gradle.CyclonedxPlugin
+
+  tasks.named("dependencyUpdates").configure {
+    // configure the task, for example wrt. resolution strategies
+  }
+  
+  // https://github.com/CycloneDX/cyclonedx-gradle-plugin/tree/master?tab=readme-ov-file#advanced-configuration
+  tasks.named("cyclonedxDirectBom").configure {
+     jsonOutput.set(file("build/application.cdx.json"))
+     projectType = "application"
+  }
+}
+```
+
+## [0.30.7] - 2025-10-19
+
+- Add `[tool.rye.scripts]`: https://rye.astral.sh/guide/pyproject/#toolryescripts
+
+## [0.30.6] - 2025-10-14
+
+- Add `jake`, `grunt`, `gulp` support for JS/TS project
+
+## [0.30.5] - 2025-10-11
+
+- Make bun as default JS/TS engine if no engine assigned for code block
+
+## [0.30.4] - 2025-09-29
+
+- Update to just 1.43.0
+- Update to maven-wrapper-plugin 3.3.4
+
+## [0.30.3] - 2025-08-30
+
+- Update to dotenvx 0.4.14 to fix the decrypt issue
+- Add dotenvx for `sq`
+- rye removed
+- Update initial templates
+
+## [0.30.2] - 2025-08-15
+
+- Update to dotenvx 0.4.8
+
+## [0.30.1] - 2025-08-01
+
+- Update to gradle 9.0.0
+- Update to dotenvx 0.3
+
+## [0.30.0] - 2025-07-25
+
+- Add [dotenvx](https://dotenvx.com/) support for `.env` encryption file.
+
+## [0.29.3] - 2025-07-20
+
+- Update just to 1.42.3
+- Update maven to 3.9.11
+- Update gradle to 8.14.3
+
+## [0.29.2] - 2025-07-02
+
+- Fix `build.xml` parse error
+- Update just to 1.41.0
+
+## [0.29.1] - 2025-06-10
+
+- Update to amper 0.7.0
+- Apache Maven 3.9.10
+- Use `minio-rs 0.3.0`
+
+## [0.29.0] - 2025-05-05
+
+- Add notification support: save output to OSS and notify via NATS
+
+## [0.28.2] - 2025-04-01
+
+- Update to amper 0.6.0
+- Update to gradle 8.13
+
+## [0.28.1] - 2025-01-12
+
+- List tasks by default instead of help
+- Add jsonc support for VS Code, Zed and Fleet
+
+## [0.28.0] - 2025-01-02
+
+- Add support for `invoke`, `poetry` and `poethepoet` installed by uv
+- Update to gradle 8.12
+
+## [0.27.0] - 2024-11-15
+
+- Add [poe](https://github.com/nat-n/poethepoet) support if `[tool.poe]` detected in `pyproject.toml`
+- Update to gradle 8.11
+
+## [0.26.0] - 2024-11-12
+
+- `self-update` for `amper`
+- Use `uv pip list --outdated` to list outdated packages
+
 ## [0.25.0] - 2024-10-13
 
 - Add `sq(Squirrel)` command-line snippets keeper: https://github.com/linux-china/task-keeper#sqsquirrel

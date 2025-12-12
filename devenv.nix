@@ -15,6 +15,7 @@
     # (note: this searches on unstable channel, be aware your nixpkgs flake input might be on a release channel)
     cargo-watch
     bacon
+    openssl
   ];
 
   #difftastic.enable = true; # Better git diff https://devenv.sh/integrations/difftastic/

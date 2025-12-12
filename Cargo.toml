@@ -1,10 +1,10 @@
 [package]
 name = "task-keeper"
-version = "0.25.0"
-edition = "2021"
+version = "0.30.9"
+edition = "2024"
 authors = ["linux_china <libing.chen@gmail.com>"]
 description = "Task keeper to manage tasks from different task runners"
-keywords = ["task", "just", "npm", "deno"]
+keywords = ["task", "just", "npm", "bun"]
 categories = ["command-line-utilities"]
 documentation = "https://github.com/linux-china/task-keeper"
 readme = "README.md"
@@ -25,30 +25,31 @@ path = "src/sq.rs"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-serde_jsonrc = "0.1"
-serde-xml-rs = "0.6"
-toml = "0.8"
+jsonc-parser = { version = "0.28", features = ["serde"] }
+serde-xml-rs = "0.8"
+toml = "0.9"
 java-properties = "2"
-colored = "2"
-colored_json = "5"
-clap = "4"
-clap_complete = "4"
-chrono = "0.4"
-regex = "1"
-dirs = "5"
-dirs-sys = "0.4.1"
-which = "6"
-thiserror = "1"
-error-stack = "0.5"
-dotenv = "0.15"
-shlex = "1"
+colored = "3"
+clap = "4.5"
+regex = "1.12"
+dirs = "6"
+dirs-sys = "0.5"
+which = "8.0"
+thiserror = "2"
+error-stack = "0.6"
+dotenvx-rs = "0.4.28"
+shlex = "1.3"
 cfg-if = "1"
-uuid = { version = "1", features = ["v4"] }
-logos = "0.14"
+uuid = { version = "1.19", features = ["v4", "v7"] }
+logos = "0.15"
 shell-escape = "0.1"
-bytecount = "0.6.8"
-just = "1.36.0"
-update-informer = { version = "1.1.0", default-features = false, features = ["github"] }
+bytecount = "0.6.9"
+just = "1.44"
+reqwest = { version = "0.12", features = ["blocking"] }
+anyhow = "1.0"
+tokio = { version = "1.48", features = ["full"] }
+async-nats = "0.45"
+minio = "0.3"
 
 [profile.release]
 strip = true
@@ -62,14 +63,15 @@ panic = "abort"
 inherits = "release"
 lto = true
 
-# Config for 'cargo dist'
+# Config for 'dist'
 [workspace.metadata.dist]
-# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.22.1"
+# The preferred dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.30.2"
 # CI backends to support
 ci = "github"
 # The installers to generate for each app
 installers = ["homebrew"]
+# A GitHub repo to push Homebrew formulas to
+tap = "linux-china/homebrew-tap"
 # Target platforms to build apps for (Rust target-triple syntax)
 targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
-

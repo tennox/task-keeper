@@ -8,19 +8,17 @@ use crate::task;
 use which::which;
 
 pub fn is_available() -> bool {
-    std::env::current_dir()
-        .map(|_dir| pyproject_toml_has_tool("poetry"))
-        .unwrap_or(false)
+    pyproject_toml_has_tool("poe")
 }
 
 pub fn is_command_available() -> bool {
-    get_uv_tool_path("poetry").is_some() || which("poetry").is_ok()
+    get_uv_tool_path("poe").is_some() || which("poe").is_ok()
 }
 
 pub fn install() -> Result<CommandOutput, Report<KeeperError>> {
     run_command(
         "uv",
-        &["tool", "install", "--python", "3.13", "poetry"],
+        &["tool", "install", "--python", "3.13", "poethepoet"],
         true,
     )
 }
@@ -28,10 +26,10 @@ pub fn install() -> Result<CommandOutput, Report<KeeperError>> {
 pub fn list_tasks() -> Result<Vec<Task>, KeeperError> {
     let mut tasks = vec![];
     if let Ok(pyproject) = PyProjectToml::get_default_project() {
-        if pyproject.poetry_available() {
-            if let Some(scripts) = pyproject.get_poetry_scripts() {
+        if pyproject.poe_available() {
+            if let Some(scripts) = pyproject.get_poe_tasks() {
                 scripts.iter().for_each(|(name, description)| {
-                    tasks.push(task!(name, "poetry", description));
+                    tasks.push(task!(name, "poe", description));
                 });
             }
         }
@@ -47,12 +45,24 @@ pub fn run_task(
 ) -> Result<CommandOutput, Report<KeeperError>> {
     let mut args = vec![];
     args.extend(global_args);
-    args.push("run");
     args.push(task);
     args.extend(task_args);
-    if let Some(poetry) = get_uv_tool_path("poetry") {
-        run_command(&poetry, &args, verbose)
+    if let Some(poe) = get_uv_tool_path("poe") {
+        run_command(&poe, &args, verbose)
     } else {
-        run_command("poetry", &args, verbose)
+        run_command("poe", &args, verbose)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_list_tasks() {
+        let tasks = list_tasks().unwrap();
+        for task in &tasks {
+            println!("Task: {:?}", task);
+        }
     }
 }

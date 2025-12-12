@@ -1,10 +1,10 @@
+pub mod notification;
 pub mod pyproject;
 
 use crate::errors::KeeperError;
-use error_stack::Result;
-use error_stack::{ResultExt};
+use error_stack::{Report, ResultExt};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap};
+use std::{collections::HashMap, fs};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
@@ -14,12 +14,15 @@ pub struct PackageJson {
     pub package_manager: Option<String>,
 }
 
-pub fn parse_package_json() -> Result<PackageJson, KeeperError> {
-    std::env::current_dir()
-        .map(|dir| dir.join("package.json"))
-        .map(|path| std::fs::read_to_string(path).unwrap_or("{}".to_owned()))
-        .map(|data| serde_json::from_str::<PackageJson>(&data).unwrap())
-        .change_context(KeeperError::InvalidPackageJson)
+pub fn parse_package_json() -> core::result::Result<PackageJson, Report<KeeperError>> {
+    let content = fs::read_to_string(
+        &std::env::current_dir()
+            .expect("Failed to get current directory")
+            .join("package.json"),
+    )
+    .unwrap_or_else(|_| "{}".to_owned()); // HACK: if file read fails, fallback to empty json
+
+    serde_json::from_str::<PackageJson>(&content).change_context(KeeperError::InvalidPackageJson)
 }
 
 pub fn get_npm_command(package_json: &PackageJson) -> &'static str {
@@ -53,8 +56,8 @@ pub fn pyproject_toml_has_tool(tool_name: &str) -> bool {
             let pyproject_file = dir.join("pyproject.toml");
             pyproject_file.exists()
                 && std::fs::read_to_string(pyproject_file)
-                .unwrap_or("".to_owned())
-                .contains(&format!("[tool.{}", tool_name))
+                    .unwrap_or("".to_owned())
+                    .contains(&format!("[tool.{}", tool_name))
         })
         .unwrap_or(false)
 }

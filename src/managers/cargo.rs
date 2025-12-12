@@ -1,9 +1,9 @@
-use std::collections::HashMap;
-use std::process::Output;
-use error_stack::{report, Result};
-use which::which;
-use crate::command_utils::run_command_line;
+use crate::command_utils::{run_command_line, CommandOutput};
 use crate::errors::KeeperError;
+use error_stack::{IntoReport, Report};
+use std::collections::HashMap;
+use which::which;
+use crate::task;
 
 pub fn is_available() -> bool {
     std::env::current_dir()
@@ -17,7 +17,7 @@ pub fn is_command_available() -> bool {
 
 pub fn get_task_command_map() -> HashMap<String, String> {
     let mut task_command_map = HashMap::new();
-    task_command_map.insert("install".to_string(), "cargo build".to_string());
+    task_command_map.insert("install".to_string(), "cargo fetch".to_string());
     task_command_map.insert("compile".to_string(), "cargo build".to_string());
     task_command_map.insert("build".to_string(), "cargo build".to_string());
     task_command_map.insert("release".to_string(), "cargo build --release".to_string());
@@ -33,13 +33,22 @@ pub fn get_task_command_map() -> HashMap<String, String> {
     if cargo_bin {
         task_command_map.insert("start".to_string(), "cargo run".to_string());
     }
+    task_command_map.insert("sbom".to_string(), "cargo-cyclonedx cyclonedx -v --format json".to_string());
     task_command_map
 }
 
-pub fn run_task(task: &str, _task_args: &[&str], _global_args: &[&str], verbose: bool) -> Result<Output, KeeperError> {
+pub fn run_task(
+    task: &str,
+    _task_args: &[&str],
+    _global_args: &[&str],
+    verbose: bool,
+) -> Result<CommandOutput, Report<KeeperError>> {
     if let Some(command_line) = get_task_command_map().get(task) {
         run_command_line(command_line, verbose)
     } else {
-        Err(report!(KeeperError::ManagerTaskNotFound(task.to_owned(), "cargo".to_string())))
+        Err(KeeperError::ManagerTaskNotFound(
+            task.to_owned(),
+            "cargo".to_string()
+        ).into_report())
     }
 }

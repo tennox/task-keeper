@@ -10,7 +10,7 @@ license = { text = "Apache License Version 2.0" }
 keywords = ["rye", "task-keeper"]
 requires-python = ">=3.10"
 dependencies = [
-    "flask~=2.3.1"
+    "flask~=3.1.2"
 ]
 
 [project.urls]
@@ -19,16 +19,22 @@ documentation = "https://github.com/linux-china/task-keeper"
 repository = "https://github.com/linux-china/task-keeper"
 changelog = "https://github.com/linux-china/task-keeper/blob/master/CHANGELOG.md"
 
-[tool.rye]
-managed = true
-dev-dependencies = [
-    "pip~=23.1.2"
-]
-
-[tool.rye.scripts]
-hello = "python main.py"
-serve = "python -m http.server -d docs 8000"
-
 [tool.poetry.scripts]
 my_package_cli = 'demo:main'
 devtest = { callable = "mypackage:test.run_tests", extras = ["test"] }
+
+[tool.poe.tasks]
+test = "pytest --cov=my_app"
+serve.script = "my_app.service:run(debug=True)"
+build = ["test", "_build"]
+
+[tool.poe.tasks.test-quick]
+help = "Run tests excluding those makes as slow."
+cmd = "pytest -m \"not slow\""
+
+[tool.rye.scripts]
+# These three options are equivalent:
+python-version = "python3 --version"
+hello = { cmd = "echo 'hello'" }
+hello-world = { call = "builtins:print('Hello World!')" }
+all = { chain = ["hello-world","hello"] }

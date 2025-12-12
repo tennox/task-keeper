@@ -109,7 +109,9 @@ target/
 
 vendor/
 #*.lock
-
+composer.lock
+.venv/
+uv.lock
 
 ##########
 # DEVENV #      
